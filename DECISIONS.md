@@ -16,3 +16,22 @@ Uma linha por decisão tomada onde o spec é omisso ou tinha um erro real.
 - Breakpoint de 900px exposto como screen Tailwind `largo`.
 - `src/state/__tests__/store.spec.ts` cobre a regra dos params efetivos (além do teste pedido de `deriveAdvanced`).
 - Versões: última patch dentro das majors fixadas pelo spec (`three` e `@types/three` presos em 0.160.x com `~`).
+
+## Marco 2
+- Arquivos além dos listados no spec: `grid.ts` (morfologia binária, buracos, componentes), `resample.ts` (B.1), `params.ts` (clamps 3.5), `pipeline.ts` (orquestra B a E; é o que o worker vai chamar).
+- A reamostragem para R=512 (B.1) roda uma vez por imagem, no `load`, pois não depende de parâmetros; o cache tonal cobre os passos B.2 a B.9.
+- A imagem de trabalho guarda RGB já compostos sobre branco; `saturation` é calculada sobre esses valores compostos.
+- Blur e Sobel replicam o pixel da borda; a morfologia ignora vizinhos fora da imagem.
+- Tom fora do retângulo do conteúdo (a margem) vale 0 em todos os estilos; no entalhado a margem fica alta.
+- Margem efetiva = min(margem, (largura - 4)/2): o conteúdo nunca fica menor que 4 mm (largura 20 + margem 10 zeraria o conteúdo).
+- O disco inteiro da argola é plano (relevo 0), inclusive onde sobrepõe o corpo.
+- Ponte da argola: meia-largura mínima de 0,75 célula, para a faixa ser contínua em grade grossa.
+- Célula criada pela correção de pinças é corpo se as duas diagonais forem corpo; senão é argola.
+- "Área < minIslandMm²" = área em mm² menor que `minIslandMm` ao quadrado.
+- O aviso `contourFallback` só aparece no estilo contour (nos outros a figura não é usada).
+- A borda protetora erode a ocupação inteira (corpo + argola), então não surge borda na junção com a argola.
+- `layers = 1` é tratado como 0 (contínuo); `blurPx`, `morphology` e `meshResolution` são arredondados para inteiro.
+- Origem da malha = canto inferior esquerdo da GRADE; a caixa total fica alinhada ao topo-esquerda, então pode sobrar menos de 1 célula vazia embaixo/à direita.
+- Diagonal dos quads fixa (inferior-esquerdo -> superior-direito), igual no topo e no fundo.
+- `lowContrast` entra em `stats.warnings` a partir da detecção guardada na fonte.
+- O benchmark usa o melhor de 3 execuções, para medir o algoritmo e não o aquecimento do JIT.

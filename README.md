@@ -33,4 +33,4 @@ Decisões de projeto ficam em [DECISIONS.md](DECISIONS.md).
 
 ## Estado
 
-Marco 1 de 5: scaffold, tipos, store e layout estático.
+Marco 2 de 5: núcleo puro (`src/core`) completo e testado. Ainda sem worker nem viewport.
