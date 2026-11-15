@@ -55,6 +55,7 @@ export interface SculpoState {
   setBasic: (patch: Partial<BasicParams>) => void;
   setAdvanced: (patch: Partial<AdvancedParams>) => void;
   setImage: (file: File, info: ImageInfo, detected: Detected) => void;
+  clearImage: () => void;
   setResult: (result: BuildResult | null) => void;
   setBusy: (busy: boolean) => void;
   setError: (error: string | null) => void;
@@ -115,6 +116,9 @@ export const useStore = create<SculpoState>((set) => ({
       // No avançado, a nova imagem reinicia os ajustes a partir da detecção.
       advanced: deriveAdvanced(s.basic, detected),
     })),
+
+  // Carregamento falhou: nenhuma malha pode ficar disponível para download.
+  clearImage: () => set({ file: null, image: null, detected: null, result: null, warnings: [] }),
 
   setResult: (result) => set({ result, warnings: result ? result.stats.warnings : [] }),
   setBusy: (busy) => set({ busy }),

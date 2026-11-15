@@ -35,3 +35,14 @@ Uma linha por decisão tomada onde o spec é omisso ou tinha um erro real.
 - Diagonal dos quads fixa (inferior-esquerdo -> superior-direito), igual no topo e no fundo.
 - `lowContrast` entra em `stats.warnings` a partir da detecção guardada na fonte.
 - O benchmark usa o melhor de 3 execuções, para medir o algoritmo e não o aquecimento do JIT.
+
+## Marco 3
+- `DedicatedWorkerGlobalScope` não existe na lib DOM: o worker declara uma interface local mínima com esse nome (sem adicionar a lib WebWorker).
+- Fila do cliente: 1 em voo + 1 pendente POR TIPO (load, build, exportStl), para um build novo nunca derrubar uma exportação; prioridade load > build > exportStl.
+- Requisição superada resolve com `null` (não é erro); um novo `load` invalida tudo o que estava em voo ou na fila.
+- Timeout no próprio `load` NÃO reenvia o arquivo (repetiria o timeout para sempre); nos demais casos o arquivo é recarregado em silêncio no worker novo.
+- Se o carregamento falha (decode/blank/timeout), a imagem e a malha anteriores são descartadas; se só a validação 3.1 falha, o modelo atual é mantido.
+- Mensagens fora do spec: "Não foi possível ler esta imagem." (decode), "Não foi possível gerar o modelo." e "Algo deu errado. Tente novamente.".
+- `file.type` vazio é rejeitado como formato não suportado (o spec exige tipo E bytes).
+- A validação 3.1 mora em `src/core/validate.ts` (pura, testada em Node); a prévia 2D (`PreviewCanvas`) foi adiantada do Marco 5 para dar retorno visual antes do viewport.
+- Arquivos do Marco 1 alterados: `store.ts` (ação `clearImage`), `Header.tsx`, `App.tsx` e `ViewportPlaceholder.tsx` (ligação ao worker).

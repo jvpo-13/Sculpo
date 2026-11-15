@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { downloadStl, loadFile } from '../state/actions';
 import { useStore, type Mode } from '../state/store';
 
 function Logo() {
@@ -22,16 +24,30 @@ export default function Header() {
   const mode = useStore((s) => s.mode);
   const setMode = useStore((s) => s.setMode);
   const temMalha = useStore((s) => s.result !== null);
+  const input = useRef<HTMLInputElement>(null);
 
   return (
     <header className="flex min-h-16 shrink-0 flex-wrap items-center gap-3 border-b border-borda bg-painel px-4 py-2">
       <Logo />
 
-      {/* Carregamento de imagem é ligado no Marco 3. */}
+      <input
+        ref={input}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        className="hidden"
+        tabIndex={-1}
+        aria-hidden="true"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          // Limpa o valor para permitir recarregar o mesmo arquivo.
+          e.target.value = '';
+          if (file) void loadFile(file);
+        }}
+      />
       <button
         type="button"
-        disabled
-        className="rounded-md border border-borda px-3 py-2 text-sm font-medium text-texto disabled:cursor-not-allowed disabled:opacity-50"
+        onClick={() => input.current?.click()}
+        className="rounded-md border border-borda px-3 py-2 text-sm font-medium text-texto hover:border-apoio"
       >
         Carregar Imagem
       </button>
@@ -61,6 +77,7 @@ export default function Header() {
       <button
         type="button"
         disabled={!temMalha}
+        onClick={() => void downloadStl()}
         className="rounded-md bg-destaque px-4 py-2 text-sm font-semibold text-fundo disabled:cursor-not-allowed disabled:opacity-40"
       >
         Baixar Chaveiro (.STL)

@@ -33,4 +33,4 @@ Decisões de projeto ficam em [DECISIONS.md](DECISIONS.md).
 
 ## Estado
 
-Marco 2 de 5: núcleo puro (`src/core`) completo e testado. Ainda sem worker nem viewport.
+Marco 3 de 5: worker e cliente ligados; carregar imagem e baixar o STL funcionam de ponta a ponta. Ainda sem viewport 3D.

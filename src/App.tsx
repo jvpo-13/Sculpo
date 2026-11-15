@@ -1,10 +1,15 @@
+import { useEffect } from 'react';
 import Header from './components/Header';
 import SidePanel from './components/SidePanel';
 import ViewportPlaceholder from './components/ViewportPlaceholder';
+import { startAutoRebuild } from './state/actions';
 
 // Layout da Parte 7.1: barra fixa, viewport flexível, painel de 360px à
 // direita (abaixo do viewport quando a janela tem menos de 900px).
 export default function App() {
+  // Mudou um parâmetro efetivo -> novo build no worker.
+  useEffect(() => startAutoRebuild(), []);
+
   return (
     <div className="flex h-full flex-col bg-fundo text-texto">
       <Header />
