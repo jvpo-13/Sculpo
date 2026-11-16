@@ -1,5 +1,5 @@
 import { useStore } from '../state/store';
-import type { AdvancedParams, CaptureMode, Channel, ReliefType, ShapeStyle } from '../types';
+import type { AdvancedParams, CaptureMode, Channel, ReliefType, ShapeStyle, SurfaceStyle } from '../types';
 import PreviewCanvas from './PreviewCanvas';
 import { RadioRow, Section, Select, Slider, Toggle } from './controls';
 
@@ -25,6 +25,11 @@ const ESTILOS: { id: ShapeStyle; rotulo: string }[] = [
 const RELEVOS: { id: ReliefType; rotulo: string }[] = [
   { id: 'raised', rotulo: 'Alto-Relevo' },
   { id: 'engraved', rotulo: 'Entalhado' },
+];
+
+const ACABAMENTOS: { id: SurfaceStyle; rotulo: string }[] = [
+  { id: 'smooth', rotulo: 'Suave' },
+  { id: 'pixelated', rotulo: 'Pixelado' },
 ];
 
 const mm = (casas: number) => (v: number) => `${v.toFixed(casas)} mm`;
@@ -82,6 +87,7 @@ export default function AdvancedPanel() {
         <Section titulo="Estrutura (mm)">
           <Select id="adv-estilo" rotulo="Estilo" valor={a.style} opcoes={ESTILOS} onChange={set('style')} />
           <RadioRow nome="adv-relevo" rotulo="Tipo de Relevo" valor={a.reliefType} opcoes={RELEVOS} onChange={set('reliefType')} />
+          <RadioRow nome="adv-acabamento" rotulo="Acabamento" valor={a.surface} opcoes={ACABAMENTOS} onChange={set('surface')} />
           <Slider id="adv-largura" rotulo="Largura" min={20} max={200} step={1} valor={a.widthMm} onChange={set('widthMm')} formato={mm(0)} />
           <Slider id="adv-base" rotulo="Espessura da Base" min={1.2} max={5} step={0.1} valor={a.baseThicknessMm} onChange={set('baseThicknessMm')} formato={mm(1)} />
           <Slider id="adv-relevo-altura" rotulo="Altura Máxima do Relevo" min={0.4} max={6} step={0.1} valor={a.maxReliefMm} onChange={set('maxReliefMm')} formato={mm(1)} />

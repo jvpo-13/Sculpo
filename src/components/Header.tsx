@@ -25,6 +25,9 @@ export default function Header() {
   const mode = useStore((s) => s.mode);
   const setMode = useStore((s) => s.setMode);
   const temMalha = useStore((s) => s.result !== null);
+  const quality = useStore((s) => s.exportQuality);
+  const setQuality = useStore((s) => s.setExportQuality);
+  const exporting = useStore((s) => s.exporting);
   const input = useRef<HTMLInputElement>(null);
 
   return (
@@ -88,14 +91,30 @@ export default function Header() {
         ))}
       </div>
 
-      <button
-        type="button"
-        disabled={!temMalha}
-        onClick={() => void downloadStl()}
-        className="rounded-md bg-destaque px-4 py-2 text-sm font-semibold text-fundo disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        Baixar Chaveiro (.STL)
-      </button>
+      <div className="flex items-center gap-2">
+        <label htmlFor="qualidade-stl" className="text-xs text-apoio">
+          Qualidade
+        </label>
+        <select
+          id="qualidade-stl"
+          aria-label="Qualidade do STL"
+          title="Alta: malha com o dobro da resolução. O arquivo fica cerca de 4 vezes maior."
+          value={quality}
+          onChange={(e) => setQuality(e.target.value === 'high' ? 'high' : 'normal')}
+          className="rounded-md border border-borda bg-fundo px-2 py-2 text-xs text-texto"
+        >
+          <option value="normal">Normal</option>
+          <option value="high">Alta</option>
+        </select>
+        <button
+          type="button"
+          disabled={!temMalha || exporting}
+          onClick={() => void downloadStl()}
+          className="rounded-md bg-destaque px-4 py-2 text-sm font-semibold text-fundo disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {exporting ? 'Gerando…' : 'Baixar Chaveiro (.STL)'}
+        </button>
+      </div>
     </header>
   );
 }

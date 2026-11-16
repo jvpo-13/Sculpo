@@ -1,4 +1,4 @@
-import type { AdvancedParams, ErrorCode, FromWorker, ToWorker } from '../types';
+import type { AdvancedParams, ErrorCode, ExportQuality, FromWorker, ToWorker } from '../types';
 
 export const TIMEOUT_MS = 30_000;
 export const MSG_TIMEOUT = 'Processamento demorou demais. Tente uma imagem menor.';
@@ -27,7 +27,7 @@ type Kind = ToWorker['type'];
 type Body =
   | { type: 'load'; blob: Blob }
   | { type: 'build'; params: AdvancedParams }
-  | { type: 'exportStl'; params: AdvancedParams };
+  | { type: 'exportStl'; params: AdvancedParams; quality: ExportQuality };
 
 interface Job {
   body: Body;
@@ -68,8 +68,8 @@ export class WorkerClient {
     return this.enqueue({ type: 'build', params }) as Promise<Built | null>;
   }
 
-  exportStl(params: AdvancedParams): Promise<Stl | null> {
-    return this.enqueue({ type: 'exportStl', params }) as Promise<Stl | null>;
+  exportStl(params: AdvancedParams, quality: ExportQuality = 'normal'): Promise<Stl | null> {
+    return this.enqueue({ type: 'exportStl', params, quality }) as Promise<Stl | null>;
   }
 
   dispose(): void {

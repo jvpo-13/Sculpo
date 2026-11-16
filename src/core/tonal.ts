@@ -6,12 +6,14 @@ type TonalParams = Pick<
   | 'channel' | 'captureMode' | 'threshold' | 'brightness' | 'contrast'
   | 'gamma' | 'invert' | 'blurPx' | 'morphology'
 >;
+// A imagem de trabalho muda com o acabamento, então ele entra na chave.
+type KeyParams = TonalParams & Pick<AdvancedParams, 'surface'>;
 
 /** Chave de cache do Estágio B. */
-export function tonalKey(p: TonalParams): string {
+export function tonalKey(p: KeyParams): string {
   return [
     p.channel, p.captureMode, p.threshold, p.brightness, p.contrast,
-    p.gamma, p.invert, p.blurPx, p.morphology,
+    p.gamma, p.invert, p.blurPx, p.morphology, p.surface,
   ].join('|');
 }
 

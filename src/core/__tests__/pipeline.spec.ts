@@ -39,15 +39,19 @@ describe('buildModel', () => {
       for (let j = 18; j < 27; j++) for (let i = 18; i < 27; i++) max = Math.max(max, data[j * w + i]);
       return max;
     };
-    const kept = buildModel(source, basic({ minIslandMm: 0 })).preview;
-    const removed = buildModel(source, basic({ minIslandMm: 0.8 })).preview;
-    expect(near(kept.data, kept.w)).toBe(255);
-    expect(near(removed.data, removed.w)).toBe(32);
+    for (const surface of ['pixelated', 'smooth'] as const) {
+      const kept = buildModel(source, basic({ surface, minIslandMm: 0 })).preview;
+      const removed = buildModel(source, basic({ surface, minIslandMm: 0.8 })).preview;
+      // No suave o ponto (menor que 2 células) chega atenuado pelo antialiasing.
+      expect(near(kept.data, kept.w), surface).toBeGreaterThan(200);
+      expect(near(removed.data, removed.w), surface).toBe(32);
+    }
   });
 
   it('borda protetora eleva a beirada sem mudar a dimensão externa', () => {
-    const plain = buildModel(source, basic());
-    const bordered = buildModel(source, basic({ protectiveBorder: true }));
+    // Valores exatos por célula: só no pixelado (o suave está em smooth.spec.ts).
+    const plain = buildModel(source, basic({ surface: 'pixelated' }));
+    const bordered = buildModel(source, basic({ surface: 'pixelated', protectiveBorder: true }));
     expect(bordered.preview.data[0]).toBe(255);
     // 1,2 mm / 0,34 mm por célula = 3 células: índices 0, 1 e 2.
     expect(bordered.preview.data[2 * 160 + 2]).toBe(255);
@@ -62,9 +66,15 @@ describe('buildModel', () => {
       const v = Math.round((x / (N - 1)) * 255);
       return [v, v, v, 255];
     }));
-    const out = buildModel(gradient, params({ layers: 3, marginMm: 0 }));
+    const out = buildModel(gradient, params({ surface: 'pixelated', layers: 3, marginMm: 0 }));
     const levels = new Set(out.preview.data);
     expect([...levels].sort((a, b) => a - b)).toEqual([32, 144, 255]);
+
+    // Suave: os mesmos 3 patamares dominam; entre eles só a transição suavizada.
+    const soft = buildModel(gradient, params({ layers: 3, marginMm: 0 })).preview.data;
+    const onLevel = soft.filter((v) => v === 32 || v === 144 || v === 255).length;
+    expect(onLevel / soft.length).toBeGreaterThan(0.95);
+    expect(onLevel).toBeLessThan(soft.length);
   });
 
   it('cache tonal: reutilizar dá resultado idêntico', () => {

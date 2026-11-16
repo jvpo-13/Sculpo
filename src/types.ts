@@ -5,6 +5,8 @@ export type SizePreset = 'P' | 'M' | 'G';            // 40 / 55 / 70 mm
 export type ReliefType = 'raised' | 'engraved';
 export type RingPosition = 'top' | 'side' | 'none';
 export type FilamentColor = 'black' | 'white' | 'terracotta' | 'blue' | 'green' | 'pink';
+export type SurfaceStyle = 'smooth' | 'pixelated';   // acabamento da malha
+export type ExportQuality = 'normal' | 'high';      // 'high' dobra a resolução no STL
 
 export interface BasicParams {
   style: ShapeStyle;
@@ -42,6 +44,7 @@ export interface AdvancedParams {
   ringHoleMm: number;       // 1.5..6 (diâmetro)
   minIslandMm: number;      // 0..3
   meshResolution: number;   // 80..250 (células no maior lado)
+  surface: SurfaceStyle;    // 'smooth' = contorno e relevo com antialiasing
 }
 
 export interface Detected {
@@ -72,7 +75,7 @@ export type ErrorCode = 'decode' | 'blank' | 'unsupported' | 'timeout';
 export type ToWorker =
   | { type: 'load'; id: number; blob: Blob }
   | { type: 'build'; id: number; params: AdvancedParams }
-  | { type: 'exportStl'; id: number; params: AdvancedParams };
+  | { type: 'exportStl'; id: number; params: AdvancedParams; quality: ExportQuality };
 
 export type FromWorker =
   | { type: 'loaded'; id: number; width: number; height: number; detected: Detected }

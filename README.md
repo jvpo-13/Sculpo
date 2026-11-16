@@ -40,6 +40,16 @@ roda os testes, faz o build e publica a pasta `dist`.
 **Manual:** `npm run build` e sirva a pasta `dist` em qualquer hospedagem de
 arquivos estáticos.
 
+## Acabamento e qualidade
+
+- **Acabamento Suave (padrão):** o contorno, a argola e as bordas do relevo
+  seguem curvas reais em vez dos degraus da grade. **Pixelado** (Modo
+  Avançado → Estrutura) mantém o visual em blocos.
+- **Qualidade do STL:** *Normal* exporta a mesma malha do preview; *Alta* dobra
+  a resolução (arquivo cerca de 4 vezes maior, até uns 30 MB).
+- Imagens pequenas funcionam, mas quanto maior a imagem (512 px ou mais),
+  mais fiel o resultado.
+
 ## Imagens de exemplo
 
 As miniaturas do cabeçalho carregam `public/examples/logo.png`, `foto.jpg` e

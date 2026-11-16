@@ -1,4 +1,5 @@
 import type { AdvancedParams, Warning } from '../types';
+import { bodyField, withRing, type Bridge, type Field } from './field';
 import type { Figure } from './figure';
 import { dilateRound, fillHoles, labelComponents } from './grid';
 import type { Layout } from './layout';
@@ -19,6 +20,8 @@ export class BlankError extends Error {
 export interface MaskResult {
   occ: Uint8Array; // gx*gy, FREE | BODY | RING
   warnings: Warning[];
+  // Campo de distância do contorno (só no acabamento suave).
+  field: Field | null;
 }
 
 /**
@@ -66,10 +69,27 @@ export function removeSmallComponents(
   return kept;
 }
 
-function bodyMask(layout: Layout, style: AdvancedParams['style'], figure: Figure, work: { w: number; h: number }): Uint8Array {
+function bodyMask(
+  layout: Layout,
+  style: AdvancedParams['style'],
+  figure: Figure,
+  work: { w: number; h: number },
+  smooth: Field | null,
+): Uint8Array {
   const { gx, gy, s } = layout;
   let body: Uint8Array = new Uint8Array(gx * gy);
   const eps = 1e-9;
+
+  if (style === 'contour' && smooth) {
+    // Suave: a margem é uma distância euclidiana exata ao redor da figura.
+    for (let j = 0; j < gy; j++) {
+      for (let i = 0; i < gx; i++) {
+        body[j * gx + i] = smooth((i + 0.5) * s, (j + 0.5) * s) >= 0 ? 1 : 0;
+      }
+    }
+    fillHoles(body, gx, gy);
+    return body;
+  }
 
   if (style === 'contour') {
     for (let j = 0; j < gy; j++) {
@@ -108,9 +128,11 @@ function bodyMask(layout: Layout, style: AdvancedParams['style'], figure: Figure
 }
 
 // Passo 6: disco da argola, ponte se necessário e, só então, o furo.
-function addRing(occ: Uint8Array, layout: Layout): void {
+// Devolve a ponte criada (ou null), para o campo de distância incluí-la.
+function addRing(occ: Uint8Array, layout: Layout): Bridge | null {
   const ring = layout.ring;
-  if (!ring) return;
+  if (!ring) return null;
+  let bridge: Bridge | null = null;
   const { gx, gy, s } = layout;
   const outer2 = ring.outerR * ring.outerR;
 
@@ -154,6 +176,7 @@ function addRing(occ: Uint8Array, layout: Layout): void {
     const tv = (Math.floor(nearest / gx) + 0.5) * s;
     const half = Math.max(ring.outerR / 2, 0.75 * s);
     const half2 = half * half;
+    bridge = { tu, tv, half };
     const eu = tu - ring.u;
     const ev = tv - ring.v;
     const len2 = eu * eu + ev * ev;
@@ -196,6 +219,7 @@ function addRing(occ: Uint8Array, layout: Layout): void {
     const cj = Math.min(gy - 1, Math.max(0, Math.floor(ring.v / s)));
     occ[cj * gx + ci] = FREE;
   }
+  return bridge;
 }
 
 /** Estágio C, passos 5 a 8. Lança BlankError se não sobrar corpo. */
@@ -204,12 +228,14 @@ export function buildMask(
   p: Pick<AdvancedParams, 'style' | 'minIslandMm'>,
   figure: Figure,
   work: { w: number; h: number },
+  sdf: Float32Array | null = null, // presente = acabamento suave
 ): MaskResult {
   const { gx, gy, s } = layout;
-  const occ = bodyMask(layout, p.style, figure, work);
+  const body = sdf ? bodyField(layout, p.style, sdf, work) : null;
+  const occ = bodyMask(layout, p.style, figure, work, body);
   if (!occ.includes(BODY)) throw new BlankError();
 
-  addRing(occ, layout);
+  const bridge = addRing(occ, layout);
   fixPinches(occ, gx, gy);
 
   const minCells = (p.minIslandMm * p.minIslandMm) / (s * s);
@@ -219,5 +245,5 @@ export function buildMask(
   const warnings: Warning[] = [];
   if (p.style === 'contour' && figure.fallback) warnings.push('contourFallback');
   if (components > 1) warnings.push('looseParts');
-  return { occ, warnings };
+  return { occ, warnings, field: body ? withRing(body, layout, bridge) : null };
 }

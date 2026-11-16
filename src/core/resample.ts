@@ -34,8 +34,40 @@ interface AxisWeights {
   maxCount: number;
 }
 
+// B-spline cúbica: sem oscilação, e o contorno de nível fica liso (C2).
+function bspline(t: number): number {
+  const a = Math.abs(t);
+  if (a < 1) return (4 - 6 * a * a + 3 * a * a * a) / 6;
+  if (a < 2) return ((2 - a) * (2 - a) * (2 - a)) / 6;
+  return 0;
+}
+
+// Ampliação suave: 4 vizinhos com pesos de B-spline (borda replicada).
+// Evita que cada pixel de uma imagem pequena vire um bloco quadrado.
+function splineWeights(srcN: number, dstN: number): AxisWeights {
+  const scale = srcN / dstN;
+  const maxCount = 4;
+  const start = new Int32Array(dstN);
+  const count = new Int32Array(dstN);
+  const weights = new Float64Array(dstN * maxCount);
+  for (let i = 0; i < dstN; i++) {
+    const c = (i + 0.5) * scale - 0.5; // centro em coordenadas da origem
+    const f = Math.floor(c);
+    const s0 = Math.max(0, f - 1);
+    const s1 = Math.min(srcN - 1, f + 2);
+    for (let tap = f - 1; tap <= f + 2; tap++) {
+      const idx = tap < 0 ? 0 : tap > srcN - 1 ? srcN - 1 : tap;
+      weights[i * maxCount + (idx - s0)] += bspline(c - tap);
+    }
+    start[i] = s0;
+    count[i] = s1 - s0 + 1;
+  }
+  return { start, count, weights, maxCount };
+}
+
 // Para cada pixel de destino, os pixels de origem cobertos e a fração de cada um.
-function axisWeights(srcN: number, dstN: number): AxisWeights {
+function axisWeights(srcN: number, dstN: number, smoothUpscale: boolean): AxisWeights {
+  if (smoothUpscale && dstN > srcN) return splineWeights(srcN, dstN);
   const scale = srcN / dstN;
   const maxCount = Math.ceil(scale) + 1;
   const start = new Int32Array(dstN);
@@ -64,12 +96,15 @@ function axisWeights(srcN: number, dstN: number): AxisWeights {
   return { start, count, weights, maxCount };
 }
 
-/** Média de área separável (amplia se a imagem for menor que R). */
-export function resampleToWork(src: Rgba, R = WORK_R): WorkImage {
+/**
+ * Média de área separável ao reduzir. Ao ampliar (imagem menor que R):
+ * interpolação suave se `smoothUpscale`, senão blocos (estilo pixelado).
+ */
+export function resampleToWork(src: Rgba, R = WORK_R, smoothUpscale = false): WorkImage {
   const { width: sw, height: sh, data } = src;
   const { w, h } = workSize(sw, sh, R);
-  const wx = axisWeights(sw, w);
-  const wy = axisWeights(sh, h);
+  const wx = axisWeights(sw, w, smoothUpscale);
+  const wy = axisWeights(sh, h, smoothUpscale);
 
   // Passo horizontal: sh linhas x w colunas. A composição sobre branco é
   // linear, então pode ser feita antes da média.

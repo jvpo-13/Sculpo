@@ -80,8 +80,9 @@ function stamp(d: Date): string {
 export async function downloadStl(): Promise<void> {
   const store = useStore.getState();
   if (!store.image || !store.result) return;
+  store.setExporting(true);
   try {
-    const stl = await getClient().exportStl(effectiveParams(store));
+    const stl = await getClient().exportStl(effectiveParams(store), store.exportQuality);
     if (!stl) return;
     const url = URL.createObjectURL(new Blob([stl.buffer], { type: 'model/stl' }));
     const a = document.createElement('a');
@@ -93,6 +94,8 @@ export async function downloadStl(): Promise<void> {
     URL.revokeObjectURL(url);
   } catch (err) {
     useStore.getState().setError(messageOf(err));
+  } finally {
+    useStore.getState().setExporting(false);
   }
 }
 

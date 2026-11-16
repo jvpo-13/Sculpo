@@ -5,6 +5,7 @@ import type {
   BasicParams,
   BuildStats,
   Detected,
+  ExportQuality,
   FilamentColor,
   Warning,
 } from '../types';
@@ -50,6 +51,9 @@ export interface SculpoState {
 
   baseColor: FilamentColor;
   reliefColor: FilamentColor;
+  // Qualidade do STL baixado ('high' dobra a resolução da malha).
+  exportQuality: ExportQuality;
+  exporting: boolean;
 
   setMode: (mode: Mode) => void;
   setBasic: (patch: Partial<BasicParams>) => void;
@@ -61,6 +65,8 @@ export interface SculpoState {
   setError: (error: string | null) => void;
   setColors: (patch: { baseColor?: FilamentColor; reliefColor?: FilamentColor }) => void;
   dismissNotice: () => void;
+  setExportQuality: (quality: ExportQuality) => void;
+  setExporting: (exporting: boolean) => void;
 }
 
 /** Params EFETIVOS enviados ao worker: derivados no básico, livres no avançado. */
@@ -89,6 +95,8 @@ export const useStore = create<SculpoState>((set) => ({
 
   baseColor: 'white',
   reliefColor: 'terracotta',
+  exportQuality: 'normal',
+  exporting: false,
 
   setMode: (mode) =>
     set((s) => {
@@ -125,4 +133,6 @@ export const useStore = create<SculpoState>((set) => ({
   setError: (error) => set({ error }),
   setColors: (patch) => set(patch),
   dismissNotice: () => set({ advancedIgnoredNotice: false }),
+  setExportQuality: (exportQuality) => set({ exportQuality }),
+  setExporting: (exporting) => set({ exporting }),
 }));

@@ -30,7 +30,7 @@ describe('desempenho', () => {
 
   it('Estágio B em R=512', () => {
     const p = params({ blurPx: 5, morphology: 3, gamma: 1.4, contrast: 20 });
-    expect(best(() => computeTonal(source.work, p))).toBeLessThan(TARGET_TONAL_MS * SLACK);
+    expect(best(() => computeTonal(source.variants.smooth!.work, p))).toBeLessThan(TARGET_TONAL_MS * SLACK);
   });
 
   it('build completo a 160', () => {

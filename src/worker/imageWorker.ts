@@ -68,14 +68,16 @@ async function load(id: number, blob: Blob): Promise<void> {
   ctx.postMessage({ type: 'loaded', id, width, height, detected: prepared.detected });
 }
 
-function run(id: number, params: AdvancedParams, exportStl: boolean): void {
+// `scale` > 0 = exportação (1 = normal, 2 = alta); 0 = build do preview.
+function run(id: number, params: AdvancedParams, scale: number): void {
+  const exportStl = scale > 0;
   if (!source) {
     fail(id, 'decode', MSG_NO_IMAGE);
     return;
   }
   const t0 = performance.now();
   try {
-    const out = buildModel(source, params, cache);
+    const out = buildModel(source, params, cache, exportStl ? scale : 1);
     cache = out.cache;
     if (exportStl) {
       const buffer = buildSTL(out.positions, out.indices);
@@ -105,10 +107,10 @@ ctx.onmessage = (ev) => {
       void load(msg.id, msg.blob);
       break;
     case 'build':
-      run(msg.id, msg.params, false);
+      run(msg.id, msg.params, 0);
       break;
     case 'exportStl':
-      run(msg.id, msg.params, true);
+      run(msg.id, msg.params, msg.quality === 'high' ? 2 : 1);
       break;
   }
 };

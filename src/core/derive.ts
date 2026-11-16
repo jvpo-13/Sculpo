@@ -52,5 +52,6 @@ export function deriveAdvanced(basic: BasicParams, detected: Detected): Advanced
     ringHoleMm: 4,
     minIslandMm: 0.8,
     meshResolution: 160,
+    surface: 'smooth',
   };
 }

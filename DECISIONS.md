@@ -71,3 +71,20 @@ Uma linha por decisão tomada onde o spec é omisso ou tinha um erro real.
 - Seletor de modo do cabeçalho segue o padrão de radiogroup (Tab entra no selecionado, setas trocam).
 - O workflow de deploy roda `npm test` antes do build e usa Node 20.
 - Arquivos de marcos anteriores alterados: `AdvancedPanel.tsx` (substitui o placeholder), `actions.ts` (debounce), `Header.tsx` (setas no seletor de modo), `README.md`.
+
+## Suavização (pós-marcos, a pedido do usuário)
+Estas decisões SUBSTITUEM pontos fechados do spec (5.1: vértices nos cantos das células e diagonal fixa), com aprovação explícita.
+- Novo parâmetro `surface`: 'smooth' (padrão, inclusive no Modo Básico) ou 'pixelated' (comportamento anterior, exposto como "Acabamento" no Modo Avançado).
+- Suave, contorno: a malha é recortada pela curva real (marching squares sobre os centros das células, com o ponto de corte interpolado no campo de distância). Círculo, furo e disco da argola ficam a menos de 0,01 mm da curva exata.
+- Primeira tentativa descartada: mover só os vértices de borda da grade. Os dois extremos de cada degrau caem no mesmo ponto da curva e a célula degenera.
+- Suave, estilo contour: a margem passa a ser uma distância euclidiana exata ao redor da figura (antes: dilatação alternando cruz e quadrado). O campo de distância leva um blur 3x3 para tirar o degrau de 1 px da máscara.
+- Suave, relevo: a altura da célula é a MÉDIA do tom na área da célula (imagem integral), não um ponto; as camadas são quantizadas por pixel antes da média. A borda de um desenho vira uma rampa de ~1 célula.
+- Suave: o z de cada vértice é a altura da própria célula (sem a média entre células vizinhas, que só existia para disfarçar o degrau).
+- Suave: a diagonal de cada quadrado liga os dois cantos de altura mais parecida.
+- Suave: cantos de 90 graus (quadrado/retângulo) ganham um chanfro de meia célula (0,17 mm no tamanho M).
+- Suave, borda protetora: anel de 1,2 mm medido pela distância real ao contorno, com a borda interna suavizada.
+- Suave: ao remover uma ilha de relevo, a franja de antialiasing em volta dela também sai.
+- Imagens menores que 512 px são ampliadas com B-spline cúbica no suave (blocos no pixelado). Bordas sem antialiasing na imagem original ainda deixam ondulação visível.
+- O worker guarda o RGBA (<= 1024) para poder gerar a variante pixelada sob demanda; a chave do cache tonal inclui `surface`.
+- Qualidade do STL (cabeçalho): 'Normal' = igual ao preview; 'Alta' = dobro da resolução da malha, teto de 500 células (~645 mil triângulos, ~31 MB no máximo medido). Padrão: Normal.
+- A resolução interna da imagem continua em 512: a 500 células ela ainda é mais fina que a malha.
