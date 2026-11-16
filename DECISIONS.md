@@ -61,3 +61,13 @@ Uma linha por decisão tomada onde o spec é omisso ou tinha um erro real.
 - Altura mínima do viewport no layout estreito: 420px.
 - `ViewportPlaceholder.tsx` (Marcos 1 e 3) foi removido: substituído por `ViewportArea.tsx` + `src/three/`.
 - Custo conhecido: `toCreasedNormals` roda na thread principal (~70 ms a 160, ~150–200 ms a 250). É o que o spec pede; mover para o worker é a otimização óbvia se incomodar.
+
+## Marco 5
+- Debounce de 50 ms só para mudanças de parâmetro dentro do Modo Avançado; troca de modo, nova imagem e cards do básico disparam o build na hora.
+- "Níveis de Camada" em 0 ou 1 mostra "contínuo" (1 nível não existe; o core trata como 0).
+- Controles da argola ficam desabilitados quando "Usar Argola" está desligado.
+- Passos dos sliders onde o spec não diz: gama 0,05; mm 0,1 (margem e diâmetro externo 0,5); posição da argola 0,05; resolução 5.
+- Rótulos dos canais: Luminosidade, Vermelho, Verde, Azul, Saturação, Transparência.
+- Seletor de modo do cabeçalho segue o padrão de radiogroup (Tab entra no selecionado, setas trocam).
+- O workflow de deploy roda `npm test` antes do build e usa Node 20.
+- Arquivos de marcos anteriores alterados: `AdvancedPanel.tsx` (substitui o placeholder), `actions.ts` (debounce), `Header.tsx` (setas no seletor de modo), `README.md`.

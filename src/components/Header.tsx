@@ -65,6 +65,18 @@ export default function Header() {
             type="button"
             role="radio"
             aria-checked={mode === m.id}
+            // Padrão de radiogroup: só o selecionado entra no Tab; setas trocam.
+            tabIndex={mode === m.id ? 0 : -1}
+            onKeyDown={(e) => {
+              if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+              e.preventDefault();
+              const other = m.id === 'basic' ? 'advanced' : 'basic';
+              setMode(other);
+              const group = e.currentTarget.parentElement;
+              requestAnimationFrame(() =>
+                group?.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus(),
+              );
+            }}
             onClick={() => setMode(m.id)}
             className={
               'rounded px-3 py-1.5 text-sm font-medium transition-colors ' +

@@ -4,6 +4,7 @@ import { WorkerError } from '../worker/workerClient';
 import { effectiveParams, useStore, type SculpoState } from './store';
 
 const MSG_UNKNOWN = 'Algo deu errado. Tente novamente.';
+const ADVANCED_DEBOUNCE_MS = 50;
 
 function messageOf(err: unknown): string {
   return err instanceof WorkerError ? err.message : MSG_UNKNOWN;
@@ -104,7 +105,27 @@ function paramsChanged(s: SculpoState, prev: SculpoState): boolean {
 
 /** Liga o store ao worker: qualquer mudança nos parâmetros efetivos refaz o build. */
 export function startAutoRebuild(): () => void {
-  return useStore.subscribe((s, prev) => {
-    if (s.image && paramsChanged(s, prev)) void rebuild();
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const cancel = () => {
+    if (timer !== null) clearTimeout(timer);
+    timer = null;
+  };
+  const unsubscribe = useStore.subscribe((s, prev) => {
+    if (!s.image || !paramsChanged(s, prev)) return;
+    cancel();
+    // Controles do Modo Avançado (sliders) disparam em rajada: espera 50 ms.
+    const tweak = s.mode === 'advanced' && prev.mode === 'advanced' && s.image === prev.image;
+    if (!tweak) {
+      void rebuild();
+      return;
+    }
+    timer = setTimeout(() => {
+      timer = null;
+      void rebuild();
+    }, ADVANCED_DEBOUNCE_MS);
   });
+  return () => {
+    cancel();
+    unsubscribe();
+  };
 }
