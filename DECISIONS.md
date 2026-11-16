@@ -46,3 +46,18 @@ Uma linha por decisão tomada onde o spec é omisso ou tinha um erro real.
 - `file.type` vazio é rejeitado como formato não suportado (o spec exige tipo E bytes).
 - A validação 3.1 mora em `src/core/validate.ts` (pura, testada em Node); a prévia 2D (`PreviewCanvas`) foi adiantada do Marco 5 para dar retorno visual antes do viewport.
 - Arquivos do Marco 1 alterados: `store.ts` (ação `clearImage`), `Header.tsx`, `App.tsx` e `ViewportPlaceholder.tsx` (ligação ao worker).
+
+## Marco 4
+- Intensidades das luzes multiplicadas por PI: desde a r155 o three usa luzes fisicamente corretas e 0.6/0.8/0.2 ficariam ~3x mais escuras que o pretendido.
+- Hemisfério: céu branco, chão #666666 (0.4 do branco), intensidade 0.6; a luz direcional vem de (40, -50, 120).
+- Um plano com ShadowMaterial logo abaixo de z=0 recebe a sombra do modelo; some junto com as sombras se o fps cair.
+- Queda de fps: 12 quadros seguidos acima de 33 ms durante a interação desligam as sombras (medido só enquanto o usuário gira, pois o render é sob demanda).
+- A câmera pode ir para baixo da mesa (útil para conferir o fundo do chaveiro).
+- O renderer é criado uma vez e o viewport fica sempre montado; o estado vazio é uma camada por cima.
+- O estado vazio tem seu próprio input de arquivo: clicar no texto também abre o seletor.
+- Miniaturas de exemplo: se o arquivo não existe, a miniatura some (no cabeçalho e no estado vazio).
+- Avisos dispensados na faixa voltam se o conjunto de avisos mudar; o indicador "Processando…" fica na mesma faixa do topo.
+- Cards do Modo Básico são radios nativos escondidos (setas do teclado funcionam sem código extra).
+- Altura mínima do viewport no layout estreito: 420px.
+- `ViewportPlaceholder.tsx` (Marcos 1 e 3) foi removido: substituído por `ViewportArea.tsx` + `src/three/`.
+- Custo conhecido: `toCreasedNormals` roda na thread principal (~70 ms a 160, ~150–200 ms a 250). É o que o spec pede; mover para o worker é a otimização óbvia se incomodar.

@@ -33,4 +33,4 @@ Decisões de projeto ficam em [DECISIONS.md](DECISIONS.md).
 
 ## Estado
 
-Marco 3 de 5: worker e cliente ligados; carregar imagem e baixar o STL funcionam de ponta a ponta. Ainda sem viewport 3D.
+Marco 4 de 5: viewport 3D e Modo Básico completos (primeiro produto utilizável). Falta o Modo Avançado e o deploy.

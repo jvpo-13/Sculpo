@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { downloadStl, loadFile } from '../state/actions';
 import { useStore, type Mode } from '../state/store';
+import ExampleThumbs from './ExampleThumbs';
 
 function Logo() {
   return (
@@ -51,6 +52,7 @@ export default function Header() {
       >
         Carregar Imagem
       </button>
+      <ExampleThumbs />
 
       <div
         role="radiogroup"
